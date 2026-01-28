@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  AppState,
   FlatList,
   ListRenderItemInfo,
   StyleSheet,
@@ -99,7 +98,7 @@ export function ReelsScreen() {
     }
 
     const live = lives[currentIndexRef.current];
-    if (live == null) {
+    if (live === null) {
       return;
     }
 
@@ -120,7 +119,7 @@ export function ReelsScreen() {
       };
     } else {
       const videoStreams =
-        remoteUid == null
+        remoteUid === null
           ? []
           : [
               {
@@ -196,22 +195,14 @@ export function ReelsScreen() {
       appId: 'YOUR APP ID',
       channelProfile: ChannelProfileType.ChannelProfileLiveBroadcasting,
     });
-
     engine.registerEventHandler(eventHandler);
     engine.enableVideo();
     engine.getAgoraPip().registerPipStateChangedObserver(pipObserver);
 
     setIsEngineReady(true);
 
-    const subscription = AppState.addEventListener('change', nextState => {
-      if (nextState === 'active') {
-        setPipState(AgoraPipState.pipStateStopped);
-      }
-    });
-
     // Cleanup on screen unmount
     return () => {
-      subscription.remove();
       setIsEngineReady(false);
 
       engine.getAgoraPip().unregisterPipStateChangedObserver(pipObserver);
@@ -232,7 +223,7 @@ export function ReelsScreen() {
     }
 
     const live = lives[currentIndex];
-    if (live == null) {
+    if (live === null) {
       return;
     }
 
@@ -258,7 +249,7 @@ export function ReelsScreen() {
       return;
     }
 
-    if (remoteUid == null) {
+    if (remoteUid === null) {
       return;
     }
 
