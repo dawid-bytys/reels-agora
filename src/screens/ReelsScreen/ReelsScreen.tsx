@@ -187,6 +187,17 @@ export function ReelsScreen() {
     setIsScrollEnabled(true);
   }, []);
 
+  const renderItem = useCallback(
+    ({ item, index }: ListRenderItemInfo<Live>) => {
+      const isActive = index === currentIndex;
+
+      return <Reel live={item} isActive={isActive} remoteUid={remoteUid} />;
+    },
+    [currentIndex, remoteUid],
+  );
+
+  const keyExtractor = useCallback((item: Live) => item.external_id, []);
+
   // Handle initializing the engine
   useEffect(() => {
     const engine = engineRef.current;
@@ -255,17 +266,6 @@ export function ReelsScreen() {
 
     setupPip();
   }, [isEngineReady, remoteUid, setupPip]);
-
-  const renderItem = useCallback(
-    ({ item, index }: ListRenderItemInfo<Live>) => {
-      const isActive = index === currentIndex;
-
-      return <Reel live={item} isActive={isActive} remoteUid={remoteUid} />;
-    },
-    [currentIndex, remoteUid],
-  );
-
-  const keyExtractor = useCallback((item: Live) => item.external_id, []);
 
   return (
     <View style={styles.container}>
