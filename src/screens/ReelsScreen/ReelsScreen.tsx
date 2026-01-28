@@ -7,7 +7,7 @@ import {
   ViewToken,
 } from 'react-native';
 import { IS_ANDROID } from '~/constants/platform';
-import { useRoute, useIsFocused } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { SCREEN_HEIGHT } from '~/constants/dimensions';
 import createAgoraRtcEngine, {
   AgoraPipOptions,
@@ -30,14 +30,11 @@ export function ReelsScreen() {
   const {
     params: { lives },
   } = useRoute<RouteProp<RootStackParamList, 'ReelsScreen'>>();
-
-  const isFocused = useIsFocused();
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isScrollEnabled, setIsScrollEnabled] = useState(true);
+
   const [remoteUid, setRemoteUid] = useState<number | null>(null);
   const [isEngineReady, setIsEngineReady] = useState(false);
-
   const [pipState, setPipState] = useState<number>(
     AgoraPipState.pipStateStopped,
   );
@@ -252,7 +249,7 @@ export function ReelsScreen() {
       autoSubscribeVideo: true,
       channelProfile: ChannelProfileType.ChannelProfileLiveBroadcasting,
     });
-  }, [currentIndex, isEngineReady, isFocused, lives, pipState]);
+  }, [currentIndex, isEngineReady, lives, pipState]);
 
   // Handle setting up the PiP
   useEffect(() => {
