@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-navigation/native": "6.1.8",
     "@react-navigation/native-stack": "6.9.14",
+    "@react-navigation/stack": "6.2.0",
     "@shopify/flash-list": "1.8.3",
     "@tanstack/react-query": "5.17.19",
     "axios": "1.5.1",
@@ -19,6 +20,7 @@
     "react-native": "0.78.0",
     "react-native-agora": "4.5.2-build.140-rc.2",
     "react-native-crypto": "^2.2.1",
+    "react-native-gesture-handler": "2.24.0",
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "4.10.0"
   },
