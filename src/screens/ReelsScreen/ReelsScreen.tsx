@@ -20,6 +20,8 @@ import createAgoraRtcEngine, {
   VideoSourceType,
   VideoViewSetupMode,
   VideoMirrorModeType,
+  LogLevel,
+  RtcSurfaceView,
 } from 'react-native-agora';
 import { Reel } from './components/Reel';
 import type { RouteProp } from '@react-navigation/native';
@@ -45,6 +47,8 @@ export function ReelsScreen() {
   const engineRef = useRef<IRtcEngine>(createAgoraRtcEngine());
   const channelRef = useRef<string | null>(null);
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 });
+
+  const currentLive = lives[currentIndex];
 
   const pipObserver = useMemo(() => {
     const observer: AgoraPipStateChangedObserver = {
@@ -188,9 +192,9 @@ export function ReelsScreen() {
     ({ item, index }: ListRenderItemInfo<Live>) => {
       const isActive = index === currentIndex;
 
-      return <Reel live={item} isActive={isActive} remoteUid={remoteUid} />;
+      return <Reel live={item} isActive={isActive} />;
     },
-    [currentIndex, remoteUid],
+    [currentIndex],
   );
 
   const keyExtractor = useCallback((item: Live) => item.external_id, []);
@@ -200,8 +204,11 @@ export function ReelsScreen() {
     const engine = engineRef.current;
 
     engine.initialize({
-      appId: 'YOUR APP ID',
+      appId: 'YOUR_APP_ID',
       channelProfile: ChannelProfileType.ChannelProfileLiveBroadcasting,
+      logConfig: {
+        level: LogLevel.LogLevelDebug,
+      },
     });
     engine.registerEventHandler(eventHandler);
     engine.enableVideo();
@@ -266,9 +273,19 @@ export function ReelsScreen() {
 
   return (
     <View style={styles.container}>
+      {remoteUid != null && currentLive != null && (
+        <RtcSurfaceView
+          style={StyleSheet.absoluteFill}
+          canvas={{
+            uid: remoteUid,
+            sourceType: VideoSourceType.VideoSourceRemote,
+          }}
+        />
+      )}
       <FlatList
         ref={listRef}
         data={lives}
+        style={StyleSheet.absoluteFill}
         renderItem={renderItem}
         onMomentumScrollBegin={handleMomentumScrollBegin}
         onMomentumScrollEnd={handleMomentumScrollEnd}
@@ -292,7 +309,6 @@ export function ReelsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    height: SCREEN_HEIGHT,
     backgroundColor: 'black',
   },
 });
