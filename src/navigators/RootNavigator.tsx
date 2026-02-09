@@ -1,4 +1,4 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { HomeScreen } from '../screens/HomeScreen/HomeScreen';
 import { ReelsScreen } from '../screens/ReelsScreen/ReelsScreen';
 import type { Live } from '../http/responses/livesResponse';
@@ -8,7 +8,7 @@ export type RootStackParamList = {
   ReelsScreen: { lives: Live[] };
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   return (
