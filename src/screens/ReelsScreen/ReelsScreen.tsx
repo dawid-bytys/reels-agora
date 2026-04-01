@@ -6,9 +6,9 @@ import {
   View,
   ViewToken,
 } from 'react-native';
-import { IS_ANDROID } from '~/constants/platform';
+import { IS_ANDROID } from '../../constants/platform';
 import { useRoute } from '@react-navigation/native';
-import { SCREEN_HEIGHT } from '~/constants/dimensions';
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../constants/dimensions';
 import createAgoraRtcEngine, {
   AgoraPipOptions,
   AgoraPipState,
@@ -21,7 +21,7 @@ import createAgoraRtcEngine, {
   VideoViewSetupMode,
   VideoMirrorModeType,
   LogLevel,
-  RtcSurfaceView,
+  RtcTextureView,
 } from 'react-native-agora';
 import { Reel } from './components/Reel';
 import type { RouteProp } from '@react-navigation/native';
@@ -49,6 +49,8 @@ export function ReelsScreen() {
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 });
 
   const currentLive = lives[currentIndex];
+  const isAndroidAndInPip =
+    IS_ANDROID && pipState === AgoraPipState.pipStateStarted;
 
   const pipObserver = useMemo(() => {
     const observer: AgoraPipStateChangedObserver = {
@@ -141,8 +143,8 @@ export function ReelsScreen() {
 
       options = {
         ...options,
-        preferredContentWidth: 200,
-        preferredContentHeight: 360,
+        preferredContentWidth: SCREEN_WIDTH,
+        preferredContentHeight: SCREEN_HEIGHT,
         sourceContentView: 0,
         contentView: 0,
         videoStreams,
@@ -192,19 +194,34 @@ export function ReelsScreen() {
     ({ item, index }: ListRenderItemInfo<Live>) => {
       const isActive = index === currentIndex;
 
-      return <Reel live={item} isActive={isActive} />;
+      return (
+        <Reel
+          live={item}
+          isActive={isActive}
+          remoteUid={isActive ? remoteUid : null}
+        />
+      );
     },
-    [currentIndex],
+    [currentIndex, remoteUid],
   );
 
   const keyExtractor = useCallback((item: Live) => item.external_id, []);
+
+  const getItemLayout = useCallback(
+    (_: any, index: number) => ({
+      length: SCREEN_HEIGHT,
+      offset: SCREEN_HEIGHT * index,
+      index,
+    }),
+    [],
+  );
 
   // Handle initializing the engine
   useEffect(() => {
     const engine = engineRef.current;
 
     engine.initialize({
-      appId: 'YOUR_APP_ID',
+      appId: lives[0]?.agora_app_id ?? '',
       channelProfile: ChannelProfileType.ChannelProfileLiveBroadcasting,
       logConfig: {
         level: LogLevel.LogLevelDebug,
@@ -228,7 +245,7 @@ export function ReelsScreen() {
       engine.leaveChannel();
       engine.release();
     };
-  }, [eventHandler, pipObserver]);
+  }, [eventHandler, lives, pipObserver]);
 
   // Handle joining and leaving the channel on reel change
   useEffect(() => {
@@ -273,35 +290,47 @@ export function ReelsScreen() {
 
   return (
     <View style={styles.container}>
-      {remoteUid != null && currentLive != null && (
-        <RtcSurfaceView
-          style={StyleSheet.absoluteFill}
-          canvas={{
-            uid: remoteUid,
-            sourceType: VideoSourceType.VideoSourceRemote,
-          }}
+      {isAndroidAndInPip ? (
+        <View style={styles.pipContentContainer}>
+          {currentLive != null && (
+            <View style={styles.container}>
+              {remoteUid != null && (
+                <RtcTextureView
+                  connection={{ channelId: currentLive.agora_channel }}
+                  style={{ flex: 1 }}
+                  canvas={{
+                    uid: remoteUid,
+                    sourceType: VideoSourceType.VideoSourceRemote,
+                    renderMode: RenderModeType.RenderModeHidden,
+                  }}
+                />
+              )}
+            </View>
+          )}
+        </View>
+      ) : (
+        <FlatList
+          ref={listRef}
+          data={lives}
+          renderItem={renderItem}
+          getItemLayout={getItemLayout}
+          initialScrollIndex={currentIndex}
+          onMomentumScrollBegin={handleMomentumScrollBegin}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          viewabilityConfig={viewabilityConfig.current}
+          onViewableItemsChanged={handleViewableVideoChange}
+          keyExtractor={keyExtractor}
+          bounces={false}
+          snapToInterval={IS_ANDROID ? SCREEN_HEIGHT : undefined}
+          overScrollMode="never"
+          showsVerticalScrollIndicator={false}
+          pagingEnabled
+          snapToAlignment="start"
+          decelerationRate="fast"
+          scrollEnabled={isScrollEnabled}
+          removeClippedSubviews={IS_ANDROID}
         />
       )}
-      <FlatList
-        ref={listRef}
-        data={lives}
-        style={StyleSheet.absoluteFill}
-        renderItem={renderItem}
-        onMomentumScrollBegin={handleMomentumScrollBegin}
-        onMomentumScrollEnd={handleMomentumScrollEnd}
-        viewabilityConfig={viewabilityConfig.current}
-        onViewableItemsChanged={handleViewableVideoChange}
-        keyExtractor={keyExtractor}
-        bounces={false}
-        snapToInterval={IS_ANDROID ? SCREEN_HEIGHT : undefined}
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        pagingEnabled
-        snapToAlignment="start"
-        decelerationRate="fast"
-        scrollEnabled={isScrollEnabled}
-        removeClippedSubviews={IS_ANDROID}
-      />
     </View>
   );
 }
@@ -309,6 +338,10 @@ export function ReelsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    height: SCREEN_HEIGHT,
     backgroundColor: 'black',
+  },
+  pipContentContainer: {
+    flex: 1,
   },
 });

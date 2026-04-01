@@ -18,9 +18,10 @@
     "axios": "1.5.1",
     "react": "19.0.0",
     "react-native": "0.78.0",
-    "react-native-agora": "4.5.2-build.140-rc.2",
+    "react-native-agora": "4.6.2-rc.2",
     "react-native-crypto": "^2.2.1",
     "react-native-gesture-handler": "2.24.0",
+    "react-native-reanimated": "3.17.5",
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "4.10.0"
   },
